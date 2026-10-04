@@ -41,20 +41,29 @@ internal static class SeedData
         new("OUT-BTL-004", "Insulated Water Bottle 750 ml", "outdoor", 32.00m, 0, "Double-wall vacuum insulated bottle keeps drinks cold for 24 hours or hot for 12."),
     ];
 
-    public static IReadOnlyList<Product> ProductsFor(IReadOnlyDictionary<string, int> categoryIdsBySlug, DateTimeOffset now) =>
-    [
-        .. Products.Select((p, index) => new Product
-        {
-            Sku = p.Sku,
-            Name = p.Name,
-            Slug = Slug.From(p.Name),
-            Description = p.Description,
-            Price = p.Price,
-            StockQuantity = p.Stock,
-            CategoryId = categoryIdsBySlug[p.Category],
-            // Stagger timestamps so "newest" sorting is deterministic.
-            CreatedAt = now.AddMinutes(-index),
-            UpdatedAt = now.AddMinutes(-index),
-        }),
-    ];
+    public static IReadOnlyList<Product> ProductsFor(IReadOnlyDictionary<string, int> categoryIdsBySlug, DateTimeOffset now)
+    {
+        // Interleave categories by recency so "newest"/"featured" listings show a varied mix.
+        var categoryOrder = Products.Select(p => p.Category).Distinct().ToList();
+        var recencyRank = Products
+            .GroupBy(p => p.Category)
+            .SelectMany(g => g.Select((p, i) => (p.Sku, Rank: i * categoryOrder.Count + categoryOrder.IndexOf(g.Key))))
+            .ToDictionary(x => x.Sku, x => x.Rank);
+
+        return
+        [
+            .. Products.Select(p => new Product
+            {
+                Sku = p.Sku,
+                Name = p.Name,
+                Slug = Slug.From(p.Name),
+                Description = p.Description,
+                Price = p.Price,
+                StockQuantity = p.Stock,
+                CategoryId = categoryIdsBySlug[p.Category],
+                CreatedAt = now.AddMinutes(-recencyRank[p.Sku]),
+                UpdatedAt = now.AddMinutes(-recencyRank[p.Sku]),
+            }),
+        ];
+    }
 }

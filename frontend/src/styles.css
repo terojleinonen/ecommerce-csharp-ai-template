@@ -647,6 +647,9 @@ code {
 .field > span {
   font-weight: 500;
 }
+.field__label-row label {
+  font-weight: 500;
+}
 .field__label-row {
   display: flex;
   justify-content: space-between;

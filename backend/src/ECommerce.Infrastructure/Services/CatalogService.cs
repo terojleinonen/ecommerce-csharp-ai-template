@@ -100,6 +100,7 @@ internal sealed class CatalogService(AppDbContext db, TimeProvider clock) : ICat
             .Include(p => p.Category)
             .Where(p => p.IsActive && p.StockQuantity > 0 && p.Id != productId
                         && (p.CategoryId == source.CategoryId || coIds.Contains(p.Id)))
+            .OrderBy(p => p.Id)
             .Take(100)
             .ToListAsync(ct);
 
