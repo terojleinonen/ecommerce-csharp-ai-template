@@ -232,9 +232,9 @@ export function ProductForm({ product, onClose, onSaved }: { product: Product | 
           </label>
         </div>
 
-        <label className="field">
-          <span className="field__label-row">
-            Description
+        <div className="field">
+          <div className="field__label-row">
+            <label htmlFor="product-description">Description</label>
             <button
               type="button"
               className="btn btn--sm btn--ai"
@@ -244,10 +244,15 @@ export function ProductForm({ product, onClose, onSaved }: { product: Product | 
             >
               {generate.isPending ? 'Writing…' : '✦ Generate with AI'}
             </button>
-          </span>
-          <textarea rows={7} value={form.description ?? ''} onChange={(e) => set('description', e.target.value)} />
+          </div>
+          <textarea
+            id="product-description"
+            rows={7}
+            value={form.description ?? ''}
+            onChange={(e) => set('description', e.target.value)}
+          />
           {generate.isError && <small className="field__error">{generate.error.message}</small>}
-        </label>
+        </div>
 
         <label className="checkbox">
           <input type="checkbox" checked={form.isActive} onChange={(e) => set('isActive', e.target.checked)} />

@@ -97,7 +97,12 @@ builder.Services.AddRateLimiter(o =>
 
 // ---------- Caching, CORS, health ----------
 builder.Services.AddOutputCache(o =>
-    o.AddPolicy(CatalogEndpoints.CachePolicy, p => p.Expire(TimeSpan.FromMinutes(5)).Tag(CatalogEndpoints.CacheTag)));
+    o.AddPolicy(CatalogEndpoints.CachePolicy, p => p
+        .Expire(TimeSpan.FromMinutes(5))
+        .Tag(CatalogEndpoints.CacheTag)
+        // Request coalescing shares one execution between concurrent identical requests, so a single
+        // client aborting (e.g. navigating away) would fail every waiting request with a 500.
+        .SetLocking(false)));
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
