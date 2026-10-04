@@ -9,6 +9,36 @@ A full-stack online store with a **Claude-powered shopping assistant** that answ
 
 It's built like a production service, not a demo: layered architecture, server-side price and stock validation, JWT auth with roles, PostgreSQL migrations, rate limiting, output caching, health checks, problem-details errors, 80+ automated tests, Docker images and CI.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/catalog-dark.jpg">
+  <img alt="ShopSense catalog with category filters and product cards" src="docs/screenshots/catalog-light.jpg">
+</picture>
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%">
+      <img alt="Shopping assistant chat with product suggestions and add-to-cart buttons" src="docs/screenshots/assistant.jpg"><br>
+      <sub><b>Shopping assistant.</b> Answers come back with real catalog products you can add to the cart. Shown in offline mode; with an API key, Claude writes the replies.</sub>
+    </td>
+    <td width="50%">
+      <img alt="Product page with frequently bought together recommendations" src="docs/screenshots/product.jpg"><br>
+      <sub><b>Product page.</b> Recommendations blend order-history co-purchases with category and price similarity.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img alt="Admin product editor with Generate with AI button" src="docs/screenshots/admin-ai-copy.png"><br>
+      <sub><b>Admin product editor.</b> "Generate with AI" drafts the description. Shown with the offline template; Claude writes it when configured.</sub>
+    </td>
+    <td width="50%">
+      <img alt="Admin order list with status badges and transition actions" src="docs/screenshots/admin-orders.png"><br>
+      <sub><b>Order management.</b> Only valid status transitions are offered; cancelling restocks the products.</sub>
+    </td>
+  </tr>
+</table>
+
 ## Features
 
 **Storefront**
@@ -175,7 +205,7 @@ The loop is covered by unit tests that drive the real Anthropic SDK against a sc
 
 ```bash
 cd backend && dotnet test                  # 61 tests: unit + integration (in-memory SQLite)
-cd frontend && npm test                    # 20 tests: Vitest + Testing Library
+cd frontend && npm test                    # 22 tests: Vitest + Testing Library
 cd frontend && npm run lint && npm run typecheck
 ```
 
