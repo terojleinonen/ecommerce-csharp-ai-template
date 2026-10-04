@@ -14,6 +14,11 @@ updates:
     groups:
       dev-dependencies:
         dependency-type: development
+    ignore:
+      # typescript-eslint 8.x only supports TypeScript < 6.1. Remove once a
+      # typescript-eslint release accepts TypeScript 7 as a peer dependency.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
