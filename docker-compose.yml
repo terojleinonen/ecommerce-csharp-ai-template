@@ -1,0 +1,50 @@
+name: shopsense
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ecommerce
+      POSTGRES_USER: ${POSTGRES_USER:-shopsense}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d ecommerce"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__Default: Host=db;Port=5432;Database=ecommerce;Username=${POSTGRES_USER:-shopsense};Password=${POSTGRES_PASSWORD}
+      Database__Provider: Postgres
+      Database__MigrateOnStartup: "true"
+      Database__SeedDemoData: "true"
+      Database__AdminEmail: ${ADMIN_EMAIL:-admin@shopsense.local}
+      Database__AdminPassword: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in .env}
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:?Set JWT_SIGNING_KEY (32+ chars) in .env}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      AI__Anthropic__Model: ${ANTHROPIC_MODEL:-claude-opus-5-5}
+      Api__EnableDocs: ${API_ENABLE_DOCS:-true}
+    ports:
+      - "5080:8080" # direct API access (docs at /scalar); the web container proxies /api too
+
+  web:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      API_UPSTREAM: http://api:8080
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:

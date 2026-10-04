@@ -1,23 +1,36 @@
+using ECommerce.Core.Catalog;
+using ECommerce.Core.Orders;
+using ECommerce.Core.Users;
 using Microsoft.EntityFrameworkCore;
-using ECommerce.Core.Entities;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ECommerce.Infrastructure.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<Product> Products => Set<Product>();
-
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-    {
-    }
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+    }
 
-        modelBuilder.Entity<Product>().HasData(
-            new Product { Id = 1, Sku = "SKU-001", Name = "Sample T-Shirt", Description = "A comfy T-shirt", Price = 19.90m, Category = "Clothing", ImageUrl = "/images/sample-shirt.jpg" },
-            new Product { Id = 2, Sku = "SKU-002", Name = "Gaming Mouse", Description = "RGB gaming mouse", Price = 49.90m, Category = "Electronics", ImageUrl = "/images/gaming-mouse.jpg" }
-        );
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        ArgumentNullException.ThrowIfNull(configurationBuilder);
+        configurationBuilder.Properties<decimal>().HavePrecision(18, 2);
+
+        // SQLite (local dev & tests) can't ORDER BY decimal or DateTimeOffset natively.
+        // Store them as sortable primitives there; PostgreSQL keeps numeric/timestamptz.
+        if (Database.IsSqlite())
+        {
+            configurationBuilder.Properties<decimal>().HaveConversion<double>();
+            configurationBuilder.Properties<DateTimeOffset>().HaveConversion<DateTimeOffsetToBinaryConverter>();
+        }
     }
 }

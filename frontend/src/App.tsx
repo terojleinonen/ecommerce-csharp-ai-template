@@ -1,27 +1,58 @@
-import React from 'react';
-import { ProductList } from './components/ProductList';
-import { ChatAssistant } from './components/ChatAssistant';
-import './styles.css';
+import { Route, Routes } from 'react-router';
+import { Layout } from './components/Layout';
+import { RequireAuth } from './components/RequireAuth';
+import { AdminPage } from './pages/AdminPage';
+import { LoginPage, RegisterPage } from './pages/AuthPages';
+import { CartPage } from './pages/CartPage';
+import { CatalogPage } from './pages/CatalogPage';
+import { CheckoutPage } from './pages/CheckoutPage';
+import { NotFoundPage } from './pages/NotFoundPage';
+import { OrderDetailPage, OrdersPage } from './pages/OrdersPage';
+import { ProductPage } from './pages/ProductPage';
 
-const App: React.FC = () => {
+export function App() {
   return (
-    <div className="app-root">
-      <header className="app-header">
-        <h1>E‑Commerce React + C# AI Template</h1>
-        <p>Demo store with AI‑powered features (stubbed).</p>
-      </header>
-      <main className="app-main">
-        <section>
-          <h2>Products</h2>
-          <ProductList />
-        </section>
-        <section>
-          <h2>AI Shopping Assistant</h2>
-          <ChatAssistant />
-        </section>
-      </main>
-    </div>
+    <Routes>
+      <Route element={<Layout />}>
+        <Route index element={<CatalogPage />} />
+        <Route path="products/:id" element={<ProductPage />} />
+        <Route path="cart" element={<CartPage />} />
+        <Route path="login" element={<LoginPage />} />
+        <Route path="register" element={<RegisterPage />} />
+        <Route
+          path="checkout"
+          element={
+            <RequireAuth>
+              <CheckoutPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="orders"
+          element={
+            <RequireAuth>
+              <OrdersPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="orders/:id"
+          element={
+            <RequireAuth>
+              <OrderDetailPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="admin/*"
+          element={
+            <RequireAuth admin>
+              <AdminPage />
+            </RequireAuth>
+          }
+        />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
   );
-};
-
-export default App;
+}
